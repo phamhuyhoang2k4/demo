@@ -1,1 +1,55 @@
+name: Create 5 VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  start-vps:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vps_index: [1, 2, 3, 4, 5]
+
+    env:
+      GDRIVE_ID: 1Ms3SVREoSXt3J3yzpWNVBojJ9LWmh8ZZ
+      VPS_NAME: auto-restart-vps
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          echo "Installing required packages..."
+          sudo apt update -y
+          sudo apt install -y python3-pip wget tar
+          sudo python3 -m pip install gdown
+
+      - name: Download and run setup.sh
+        run: |
+          echo "Downloading setup.sh from Google Drive..."
+          gdown --id "$GDRIVE_ID" -O setup.sh
+
+          echo "File downloaded:"
+          ls -l setup.sh || true
+
+          echo "Fixing line endings..."
+          sed -i 's/\r$//' setup.sh
+
+          chmod +x setup.sh
+          echo "Running setup.sh..."
+          sudo bash setup.sh
+
+      - name: Keep VPS alive
+        shell: bash
+        run: |
+          echo "Keeping VPS alive..."
+          while true; do
+            for i in 1 2 3 4 5; do
+              echo "$(date '+[%Y-%m-%d %H:%M:%S]') VPS-$i still alive..."
+            done
+            sleep 60
+          done
 
