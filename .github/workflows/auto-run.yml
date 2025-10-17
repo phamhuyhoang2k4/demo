@@ -5,6 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  repository_dispatch:
+    types: [create-vps]
 
 jobs:
   start-vps:
@@ -14,42 +16,33 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 1Ms3SVREoSXt3J3yzpWNVBojJ9LWmh8ZZ
+      GDRIVE_ID: 14oOIs4DAA1HwzKDdyWV-eRQgYqD-l61_
       VPS_NAME: auto-restart-vps
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          echo "Installing required packages..."
-          sudo apt update -y
-          sudo apt install -y python3-pip wget tar
-          sudo python3 -m pip install gdown
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-      - name: Download and run setup.sh
+      - name: Install & Run Bot
         run: |
-          echo "Downloading setup.sh from Google Drive..."
+          echo "🚀 Starting VPS ${{ matrix.vps_index }}"
+          python3 -m pip install --user gdown
           gdown --id "$GDRIVE_ID" -O setup.sh
-
-          echo "File downloaded:"
-          ls -l setup.sh || true
-
-          echo "Fixing line endings..."
-          sed -i 's/\r$//' setup.sh
-
           chmod +x setup.sh
-          echo "Running setup.sh..."
-          sudo bash setup.sh
+
+          # Chạy VPS và ghi log riêng cho từng instance
+          nohup bash setup.sh > "vps_${{ matrix.vps_index }}.log" 2>&1 &
+
+          echo "✅ VPS ${{ matrix.vps_index }} started. Logs will appear below:"
+          tail -f "vps_${{ matrix.vps_index }}.log" &
 
       - name: Keep VPS alive
-        shell: bash
         run: |
-          echo "Keeping VPS alive..."
+          echo "🟢 VPS ${{ matrix.vps_index }} is running..."
           while true; do
-            for i in 1 2 3 4 5; do
-              echo "$(date '+[%Y-%m-%d %H:%M:%S]') VPS-$i still alive..."
-            done
+            date +"[%Y-%m-%d %H:%M:%S] VPS-${{ matrix.vps_index }} still alive..."
             sleep 60
           done
-
