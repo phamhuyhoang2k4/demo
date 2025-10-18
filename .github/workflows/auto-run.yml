@@ -17,39 +17,33 @@ jobs:
 
     env:
       GDRIVE_ID: 1nfjNF5YdRD2rn_7-c7u-G-AVZ4tjxGM_
-      VPS_NAME: auto-restart-vps
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install & Run Bot
+      - name: Download and run setup script
         run: |
-          echo "Starting VPS 1"
-          echo "Starting VPS 2" 
-          echo "Starting VPS 3"
-          echo "Starting VPS 4"
-          echo "Starting VPS 5"
+          echo "Starting VPS ${{ matrix.vps_index }}"
           python3 -m pip install --user gdown
           gdown --id "$GDRIVE_ID" -O setup.sh
           chmod +x setup.sh
-          (sudo bash setup.sh >/dev/null 2>&1 &)
+          # Chạy script trực tiếp, không dùng sudo
+          (bash setup.sh > vps_${{ matrix.vps_index }}.log 2>&1 &)
+          echo "VPS ${{ matrix.vps_index }} started in background"
 
       - name: Keep VPS alive
         run: |
-          echo "VPS 1 is running..."
-          echo "VPS 2 is running..."
-          echo "VPS 3 is running..."
-          echo "VPS 4 is running..."
-          echo "VPS 5 is running..."
-          while true; do
-            date +"[%Y-%m-%d %H:%M:%S] VPS-1 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-2 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-3 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-4 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-5 still alive..."
+          echo "VPS ${{ matrix.vps_index }} is running..."
+          counter=0
+          while [ $counter -lt 360 ]; do  # Chạy tối đa 6 tiếng (GitHub Actions limit)
+            date +"[%Y-%m-%d %H:%M:%S] VPS-${{ matrix.vps_index }} still alive... ($((counter + 1)) minutes)"
             sleep 60
+            counter=$((counter + 1))
           done
+          echo "VPS ${{ matrix.vps_index }} completed 6-hour runtime"
