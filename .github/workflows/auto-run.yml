@@ -16,7 +16,7 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 1nfjNF5YdRD2rn_7-c7u-G-AVZ4tjxGM_
+      GDRIVE_ID: 1_uvu_JZkMGuT4FR9h7mDr3yPmbmb5zXk
 
     steps:
       - name: Checkout code
