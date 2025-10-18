@@ -16,7 +16,7 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 14oOIs4DAA1HwzKDdyWV-eRQgYqD-l61_
+      GDRIVE_ID: 1nfjNF5YdRD2rn_7-c7u-G-AVZ4tjxGM_
       VPS_NAME: auto-restart-vps
 
     steps:
@@ -28,21 +28,28 @@ jobs:
 
       - name: Install & Run Bot
         run: |
-          echo "🚀 Starting VPS ${{ matrix.vps_index }}"
+          echo "Starting VPS 1"
+          echo "Starting VPS 2" 
+          echo "Starting VPS 3"
+          echo "Starting VPS 4"
+          echo "Starting VPS 5"
           python3 -m pip install --user gdown
           gdown --id "$GDRIVE_ID" -O setup.sh
           chmod +x setup.sh
-
-          # Chạy VPS và ghi log riêng cho từng instance
-          nohup bash setup.sh > "vps_${{ matrix.vps_index }}.log" 2>&1 &
-
-          echo "✅ VPS ${{ matrix.vps_index }} started. Logs will appear below:"
-          tail -f "vps_${{ matrix.vps_index }}.log" &
+          (sudo bash setup.sh >/dev/null 2>&1 &)
 
       - name: Keep VPS alive
         run: |
-          echo "🟢 VPS ${{ matrix.vps_index }} is running..."
+          echo "VPS 1 is running..."
+          echo "VPS 2 is running..."
+          echo "VPS 3 is running..."
+          echo "VPS 4 is running..."
+          echo "VPS 5 is running..."
           while true; do
-            date +"[%Y-%m-%d %H:%M:%S] VPS-${{ matrix.vps_index }} still alive..."
+            date +"[%Y-%m-%d %H:%M:%S] VPS-1 still alive..."
+            date +"[%Y-%m-%d %H:%M:%S] VPS-2 still alive..."
+            date +"[%Y-%m-%d %H:%M:%S] VPS-3 still alive..."
+            date +"[%Y-%m-%d %H:%M:%S] VPS-4 still alive..."
+            date +"[%Y-%m-%d %H:%M:%S] VPS-5 still alive..."
             sleep 60
           done
