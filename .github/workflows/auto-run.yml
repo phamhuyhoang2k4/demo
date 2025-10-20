@@ -16,7 +16,7 @@ jobs:
         vps_index: [1, 2, 3, 4, 5]
 
     env:
-      GDRIVE_ID: 1j0kTJWEucibjnPpMMi-pyyYgfRKoA-Uu
+      GDRIVE_ID: 1091OMyUhjWcXqO9IGvcS2hIsrFOcL5RU
       VPS_NAME: auto-restart-vps
 
     steps:
